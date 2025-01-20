@@ -18,8 +18,7 @@
 ## *   xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx,                                       *
 ## *   xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx                                       *
 #-----------------------------------------------------------------------------
-# Frontend2 Author: Jon Gough 
-# Testplugin(TP) v1.0.260 07/10/2023 DD/MM/YYYY format
+# Frontend2 Author: Jon Gough Testplugin(TP) v1.0.326.0 18/01/2025 DD/MM/YYYY
 # buildCI:yes useODAPI:no validateJSON:no
 # ---------------------------------------------------------------------------
 ## -- When changing this file do NOT change the order of the sections.    -- ##
@@ -37,12 +36,15 @@ if(COMMAND cmake_policy)
         cmake_policy(SET CMP0043 NEW)
     endif(POLICY CMP0043)
     cmake_policy(SET CMP0048 NEW)
-# Need cmake 3.13 to implement this, but raspbian builds are at 3.7.2 and bionic at 3.10 and xenial builds at 3.5.1
-#    cmake_policy(SET CMP0076 NEW)
+    if(POLICY CMP0076)
+        cmake_policy(SET CMP0076 NEW)
+    endif(POLICY CMP0076)
     if(POLICY CMP0077)
         cmake_policy(SET CMP0077 NEW)
     endif(POLICY CMP0077)
 endif(COMMAND cmake_policy)
+# set for vscode/vscodium
+set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
 
 # define plugin name, owner and versions
 set(VERBOSE_NAME "raymarine_autopilot")
@@ -50,14 +52,14 @@ set(COMMON_NAME "Raymarine autopilot")
 set(TITLE_NAME "raymarine_autopilot")
 set(PACKAGE_CONTACT "Bernd Cirotzki")
 set(PACKAGE "raymarine_autopilot_pi")
-set(SHORT_DESCRIPTION "Control a Raymarine Seatalk 1 Autopilot")
-set(LONG_DESCRIPTION "Control Raymarine ST1 Autopilot using a NMEA0183 to ST1 Converter")
+set(SHORT_DESCRIPTION "Control a Raymarine Autopilot")
+set(LONG_DESCRIPTION "Control Raymarine Autopilot using a NMEA0183 to ST1 Converter or NMEA2000 for EVO")
 
 set(VERSION_MAJOR "2")
-set(VERSION_MINOR "0")
-set(VERSION_PATCH "0")
-set(VERSION_TWEAK "2")
-set(VERSION_DATE  "14/11/2023")#DD/MM/YYYY format
+set(VERSION_MINOR "2")
+set(VERSION_PATCH "2")
+set(VERSION_TWEAK "0")
+set(VERSION_DATE  "20/01/2025")#DD/MM/YYYY format
 set(OCPN_MIN_VERSION "ov58")
 
 set(OCPN_API_VERSION_MAJOR "1")
@@ -101,13 +103,20 @@ set(OpenGL_GL_PREFERENCE "LEGACY")   #not operational
 option(USE_GL "Enable OpenGL support" ON)
 message(STATUS "${CMLOC}USE_GL: ${USE_GL}")
 
-if("${CMAKE_BUILD_TYPE}" STREQUAL "")
-    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build" FORCE)
-endif("${CMAKE_BUILD_TYPE}" STREQUAL "")
-set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "" "Debug" "Release" "RelWithDebInfo" "MinSizeRel")
+if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
+  set(CMAKE_BUILD_TYPE
+      "Release"
+      CACHE STRING "Choose the type of build" FORCE
+  )
+endif ("${CMAKE_BUILD_TYPE}" STREQUAL "")
+set_property(
+  CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "" "Debug" "Release" "RelWithDebInfo"
+                                  "MinSizeRel"
+)
 message(STATUS "${CMLOC}Build type: ${CMAKE_BUILD_TYPE}")
 
-## ----- Statements below used to setup standard variables required by the CMAKE process -- Do not remove - ##
+# ----- Statements below used to setup standard variables required by the CMAKE  -##
+# ----- process -- Do not remove -##
 
 project(${PACKAGE})
 
@@ -137,19 +146,22 @@ include("PluginConfigure")
 
 add_definitions(-DUSE_S57)
 
-## ---- Section Below - Add your project SET(SRCS and SET(HDRS  etc..
+## ----- Section above - Add your project SET(SRCS and SET(HDRS  etc.-------##
+
 
 set(SRCS
     src/icons.cpp
     src/autopilot_pi.cpp
 	src/autopilotgui.cpp
-	src/autopilotgui_impl.cpp)
+	src/autopilotgui_impl.cpp
+	src/Seasmart.cpp)
 
 set(HDRS
     include/autopilot_pi.h
     include/icons.h
     include/autopilotgui.h
-    include/autopilotgui_impl.h)
+    include/autopilotgui_impl.h
+	include/Seasmart.h)
 
 
 add_definitions(-DPLUGIN_USE_SVG)
@@ -161,13 +173,15 @@ add_definitions(-DPLUGIN_USE_SVG)
 
 ## ----- If using JSON validation in plugin section above is needed --------##
 
+if (QT_ANDROID)
+endif (QT_ANDROID)
 
 ##=============================================================
 ## Change as required to collect all the set( headers and SRCS
 ## This add_library  can be used in conditionals below.
 ##=============================================================
 
-SET(SRC ${SRCS} ${HDRS} )
+set(SRC ${SRCS} ${HDRS})
 
 ##=============================================================
 ## Modify/configure 'Include' Directories below for the Plugin
@@ -178,7 +192,7 @@ include_directories(BEFORE ${PROJECT_SOURCE_DIR}/include)
 ## Change target_sources to match your project needs.
 ##==============================================================
 
-target_sources(${PACKAGE_NAME} PUBLIC ${SRC} )
+target_sources(${PACKAGE_NAME} PUBLIC ${SRC})
 
 ##==============================================================
 
@@ -187,10 +201,10 @@ if(NOT OCPN_FLATPAK_CONFIG)
 	# so following statements will not work
     message(STATUS "${CMLOC}Adding target link libraries to ${PACKAGE_NAME}")
 
-    if(WIN32)
+    if (WIN32)
         add_subdirectory(opencpn-libs/WindowsHeaders)
         target_link_libraries(${PACKAGE_NAME} windows::headers)
-    endif()
+    endif (WIN32)
 
     add_subdirectory(opencpn-libs/api-18)
     target_link_libraries(${PACKAGE_NAME} ocpn::api)
@@ -227,9 +241,9 @@ add_definitions(-DTIXML_USE_STL)
 ##------- Change below to match project requirements --------------------##
 
 # Needed for android builds
-if(QT_ANDROID)
-    include_directories(BEFORE ${qt_android_include})
-endif(QT_ANDROID)
+if (QT_ANDROID)
+  include_directories(BEFORE ${qt_android_include})
+endif (QT_ANDROID)
 
 ## Needed for all builds Do not change - needed to build app -------------##
 ##===============================================================
@@ -242,7 +256,11 @@ include("PluginPackage")
 ## ----- Do not change section above - needed to configure build process --##
 
 message(STATUS "${CMLOC}include directories: ")
-get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
-foreach(dir ${dirs})
-    message(STATUS "${CMLOC}dir='${dir}'")
-endforeach()
+get_property(
+  dirs
+  DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  PROPERTY INCLUDE_DIRECTORIES
+)
+foreach (dir ${dirs})
+  message(STATUS "${CMLOC}dir='${dir}'")
+endforeach ()

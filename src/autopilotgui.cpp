@@ -194,7 +194,7 @@ m_Parameterdialog::m_Parameterdialog( wxWindow* parent, wxWindowID id, const wxS
 	wxBoxSizer* bSizer2;
 	bSizer2 = new wxBoxSizer( wxVERTICAL );
 
-wxFlexGridSizer* fgSizer12;
+	wxFlexGridSizer* fgSizer12;
 	fgSizer12 = new wxFlexGridSizer( 0, 3, 0, 0 );
 	fgSizer12->SetFlexibleDirection( wxBOTH );
 	fgSizer12->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
@@ -209,7 +209,7 @@ wxFlexGridSizer* fgSizer12;
 
 	fgSizer12->Add( m_AutopilotTypeText, 0, wxALL, 14 );
 
-	wxString m_AutopilotTypeChoices[] = { _("Raymarine Seatalk1 Autopilots (S1,S2,S3, ...), connected over NMEA0183/Seatalk1 translater"), _("Raymarine EVO Autopilot (connected over N2K / SeatalkNG)") };
+	wxString m_AutopilotTypeChoices[] = { _("Raymarine Seatalk1 Autopilots (S1,S2,S3, ...), connected over NMEA0183/Seatalk1 translater"), _("Raymarine EVO Autopilot (connected over N2K / SeatalkNG)"), _("Raymarine EVO Autopilot (connected over Seasmart NMEA0183 $PCDIN)") };
 	int m_AutopilotTypeNChoices = sizeof( m_AutopilotTypeChoices ) / sizeof( wxString );
 	m_AutopilotType = new wxChoice( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_AutopilotTypeNChoices, m_AutopilotTypeChoices, 0 );
 	m_AutopilotType->SetSelection( 0 );
@@ -499,6 +499,32 @@ wxFlexGridSizer* fgSizer12;
 
 	bSizer2->Add( fgSizer521, 0, wxEXPAND, 0 );
 
+	wxFlexGridSizer* fgSizer522;
+	fgSizer522 = new wxFlexGridSizer( 0, 3, 0, 0 );
+	fgSizer522->SetFlexibleDirection( wxBOTH );
+	fgSizer522->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
+
+
+	fgSizer522->Add( 18, 0, 0, wxEXPAND, 5 );
+
+	m_maxchangehdg = new wxTextCtrl( this, wxID_ANY, ("20"), wxDefaultPosition, FromDIP(wxSize( 40,20 )), wxTE_CENTER );
+	#ifdef __WXGTK__
+	if ( !m_maxchangehdg->HasFlag( wxTE_MULTILINE ) )
+	{
+	m_maxchangehdg->SetMaxLength( 3 );
+	}
+	#else
+	m_maxchangehdg->SetMaxLength( 3 );
+	#endif
+	fgSizer522->Add( m_maxchangehdg, 0, wxALL, 3 );
+
+	m_maxchangehdgtext = new wxStaticText( this, wxID_ANY, _("maximum change of the \"is set pilot heading\" from last set in degrees"), wxDefaultPosition, FromDIP(wxSize( -1,-1 )), 0 );
+	m_maxchangehdgtext->Wrap( -1 );
+	fgSizer522->Add( m_maxchangehdgtext, 0, wxALIGN_CENTER_VERTICAL|wxALL, 3 );
+
+
+	bSizer2->Add( fgSizer522, 1, wxEXPAND, 5 );
+	
 	m_staticline41 = new wxStaticLine( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL );
 	bSizer2->Add( m_staticline41, 0, wxEXPAND | wxALL, 6 );
 
